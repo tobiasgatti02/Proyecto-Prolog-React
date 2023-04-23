@@ -3,6 +3,14 @@ body {
   margin: 20px;
 }
 
+
+body.dark-mode {
+  font: 14px "Century Gothic", Futura, sans-serif;
+  margin: 20px;
+  background-color: black;
+}
+
+
 .game {
   display: flex;
   flex-direction: column;
@@ -36,6 +44,8 @@ body {
 .board {
   margin: 20px;
   position: relative;
+  background-color: black;
+  border-radius: 1%;
 }
 
 .squares {

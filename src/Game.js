@@ -5,6 +5,8 @@ import Square from './Square';
 import { joinResult } from './util';
 
 
+
+
 let pengine;
 
 function Game() {
@@ -34,6 +36,10 @@ function Game() {
       }
     });
   }
+
+
+
+
 
 
   /**
@@ -100,6 +106,7 @@ function Game() {
     }
   }
 
+  
   if (grid === null) {
     return null;
   }

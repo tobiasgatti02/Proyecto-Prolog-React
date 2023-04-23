@@ -14,3 +14,4 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 	Grid = [N | Ns],	% La implementación actual es simplemente a modo de muestra, y no tiene sentido, debe reepmplazarla
 	N2 is N * 2,		% por una implementación válida.
 	RGrids = [ [N2 | Ns]].
+
