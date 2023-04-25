@@ -57,7 +57,6 @@ class PengineClient {
     handleError(response) {
         throw response.data;
     }
-
     /**
      * Build a prolog query based on input query that:
      *  - tracks an id for the query through a variable QueryId, so it also comes with the response and we can
