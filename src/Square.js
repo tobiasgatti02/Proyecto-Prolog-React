@@ -14,7 +14,7 @@ function Square({ value, onClick, onMouseEnter, className }) {
             onMouseEnter={onMouseEnter}
         >
             {value >= 16384 ? value=Math.trunc(value / 1000) + "k" :value}
-            {value === 0 ? "" : ""}
+            {value === 0 ? " " : ""}
         </div>
     );
     
