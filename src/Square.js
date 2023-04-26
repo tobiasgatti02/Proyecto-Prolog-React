@@ -1,24 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { numberToColor } from './util';
+import clickSound from './click.mp3';
 
 function Square({ value, onClick, onMouseEnter, className }) {
-    // value === 0 means the square is empty.    
-    
+    const [audio] = useState(new Audio(clickSound));
 
-        return (
-        
+    const handleClick = () => {
+        audio.currentTime = 0;
+        audio.play();
+        onClick();
+    };
+
+    return (
         <div
             className={"square" + (className ? " " + className : "")}
             style={value === 0 ? undefined : { backgroundColor: numberToColor(value) }}
-            onClick={onClick}
+            onClick={handleClick} // Modificar esta línea
             onMouseEnter={onMouseEnter}
         >
-            {value >= 16384 ? value=Math.trunc(value / 1000) + "k" :value}
-            {value === 0 ? " " : ""}
+            {value >= 16384 ? Math.trunc(value / 1000) + "k" : value === 0 ? "" : value}
         </div>
     );
-    
-    
 }
 
 export default Square;

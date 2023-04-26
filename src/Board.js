@@ -123,4 +123,5 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
 
 }
 
+
 export default Board;

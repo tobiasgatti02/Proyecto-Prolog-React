@@ -21,7 +21,7 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 	sumarPath(Grid, [],_, 0).
 	sumarPath(Grid, [[X,Y]|Resto],NumOfColumns, Suma) :-
 		Posicion is X * NumOfColumns + Y,
-		nth0(Posicion, Grid, Numero),
+		nth0(Posicion, Grid, Numero),% este predicado es predefinido por prolog y encuentra en una lista una posicion
 		sumarPath(Grid, Resto, NumOfColumns, SumaResto),
 		Suma is SumaResto + Numero.
 
