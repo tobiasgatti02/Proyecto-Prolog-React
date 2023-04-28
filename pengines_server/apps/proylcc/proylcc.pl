@@ -3,8 +3,6 @@
 		join/4
 	]).
 
-
-
 /**
  * join(+Grid, +NumOfColumns, +Paxth, -RGrids) 
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Paxth
@@ -14,7 +12,11 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 	sumarPath(Grid, _Paxth, _NumOfColumns, Suma),
     menorPotenciaDe2(Suma, Potencia),
 	eliminarLista(Grid,_Paxth,_NumOfColumns,Potencia,Resultante),
-	RGrids = [Resultante].
+	eliminar_ultimo(_Paxth,PathAux),
+	ordenar_por_x(_Paxth,PathAux2),
+	gravPath(PathAux2,Resultante,_NumOfColumns,Res),
+	reemplazarCeros(Res,Res2),
+	RGrids = [Resultante,Res,Res2].
 % Esto sirve para encontrar el numero a eliminar en la grilla --> (X * NumOfColumns) + (Y mod NumOfColumns)
 
 	% calcula la suma de los números en el path
@@ -53,7 +55,7 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 		
 	eliminar([Cabeza|Cola],Posicion,Contador,Res):- % este eliminar es en caso de que el contador llegue a la posicion
 		Contador =:= Posicion,
-		NuevaCabeza is 0, % esto esta bien?
+		NuevaCabeza is 0, 
 		Res = [NuevaCabeza|Cola].
 	eliminar([Cabeza|Cola],Posicion,Contador,Res):- % este caso es para iterar sobre el grid hasta llegar al elemento a eliminar
     	NuevoContador is Contador + 1,
@@ -68,8 +70,8 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 		Res = ResAux.	
 	eliminarAux([Cabeza|Cola],Posicion,Contador,Potencia,Res):-
 		Contador =:= Posicion,
-		NuevaCabeza is Potencia, % esto esta bien?
-		Res = [NuevaCabeza|Cola]. % cambiar 0 por el numero resultante del camino...
+		NuevaCabeza is Potencia,
+		Res = [NuevaCabeza|Cola].
 	eliminarAux([Cabeza|Cola],Posicion,Contador,_Potencia, Res):-
     	NuevoContador is Contador + 1,
 		eliminarAux(Cola,Posicion,NuevoContador,_Potencia, _ResAux),
@@ -77,5 +79,60 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 
 	predicadoY(Y,Resauxiliar):-
 		Resauxiliar is Y.
+	
+	gravPath(Path,Grid,NumOfColumns,NuevaGrid):-
+		Cabeza = [X|Y],
+		gravity(Grid,Path,NumOfColumns,Res),
+		NuevaGrid = Res.
 
- 
+	gravity(Grid,[],_NumOfColumns, Grid).
+	gravity(Grid,[Cabeza|Cola],NumOfColumns, NuevaGrid):-
+		Cabeza = [X|Y],
+		Y = [P|Q],
+		Indice is (X * NumOfColumns) + (P mod NumOfColumns),
+		bajarTodo(Indice,Grid,NuevaGridAux),
+		gravity(NuevaGridAux,Cola,NumOfColumns,NuevaGridAux2),
+		NuevaGrid = NuevaGridAux2.
+	
+	bajarTodo(Indice,Grid,NuevaGrid):-
+		Indice >= 0,
+		Indice =< 4,
+		NuevaGrid = Grid.
+	bajarTodo(Indice,Grid,NuevaGrid):-
+		nth0(Indice,Grid,Temp),
+		Temp =:= 0,
+		Buscar is Indice -5,
+		nth0(Buscar,Grid,ResAux),
+		ResAux \= 0,
+		reemplazarElemento(Grid, Buscar, 0, Result2),
+		reemplazarElemento(Result2, Indice, ResAux, Result),
+		bajarTodo(Indice,Result,ResAux2),
+		NuevaGrid = ResAux2.
+	
+	bajarTodo(Indice,Grid,NuevaGrid):-
+		NuevoIndice is Indice - 5,
+		bajarTodo(NuevoIndice, Grid, NuevaGrid).
+
+		ordenar_por_x(Lista, Resultado) :-
+			sort(0, @=<, Lista, Resultado).
+
+	reemplazarCeros([], []).
+	reemplazarCeros([0|Cola], [Potencia|T2]) :-
+		potencia_aleatoria(2, Potencia),
+		reemplazarCeros(Cola, T2).
+	reemplazarCeros([H|T], [H|T2]) :-
+		H \= 0,
+		reemplazarCeros(T, T2).
+
+
+	eliminar_ultimo([_], []).
+		eliminar_ultimo([X|Xs], [X|Ys]) :- eliminar_ultimo(Xs, Ys).
+% Genera un número aleatorio entre 1 y 2 elevado a la potencia de la longitud
+% de la lista potencias
+   	potencia_aleatoria(Num, Potencia) :-
+    	random_between(1, 5, Aleatorio),
+    	Potencia is Num ** Aleatorio.
+
+	reemplazarElemento(Lista, Indice, Elemento, Result) :-
+		nth0(Indice, Lista, _, Temp),
+		nth0(Indice, Result, Elemento, Temp).
