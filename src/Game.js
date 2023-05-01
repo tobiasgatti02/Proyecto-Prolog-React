@@ -123,7 +123,7 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
-      <button onClick={handleClick}>Booster</button>
+      <button className="boton-booster" onClick={handleClick}>Booster</button>
         {path.length > 0 ?
           <Square className={"nextSquare"} value={joinResult(path, grid, numOfColumns)} /> :
           <div className="score">{score}</div>}
