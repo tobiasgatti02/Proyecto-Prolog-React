@@ -91,7 +91,7 @@ function Game() {
   }
   const handleClick = () => {
     const gridS = JSON.stringify(grid);
-    const queryS = "booster(" + gridS + ", RGrids)";
+    const queryS = "booster(" + gridS + ","+ numOfColumns + ", RGrids)";
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
       if (success) {
