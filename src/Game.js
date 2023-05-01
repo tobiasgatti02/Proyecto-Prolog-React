@@ -89,6 +89,16 @@ function Game() {
       }
     });
   }
+  const handleClick = () => {
+    const gridS = JSON.stringify(grid);
+    const queryS = "booster(" + gridS + ", RGrids)";
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+        animateEffect(response['RGrids']);
+      }
+    });
+  };
 
   /**
    * Displays each grid of the sequence as the current grid in 1sec intervals.
@@ -113,6 +123,7 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
+      <button onClick={handleClick}>Booster</button>
         {path.length > 0 ?
           <Square className={"nextSquare"} value={joinResult(path, grid, numOfColumns)} /> :
           <div className="score">{score}</div>}
