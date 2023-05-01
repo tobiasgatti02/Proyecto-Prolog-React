@@ -6,6 +6,12 @@ export function numberToColor(num) {
         case 16: return "#af4e7a";
         case 32: return "#a63e4a";
         case 64: return "#8d6ebc";
+        case 128: return "#cc99ff";
+        case 256: return "#663300";
+        case 512: return "#99ffff";
+        case 1024: return "#99004c";
+        case 2048: return "#0080ff";
+        case 4092: return "#99ffcc";
         default: return "black";
     }
 }
