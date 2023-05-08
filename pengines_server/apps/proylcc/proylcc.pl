@@ -13,12 +13,12 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 	sumarPath(Grid, _Paxth, _NumOfColumns, Suma),
     menorPotenciaDe2(Suma, Potencia),
 	eliminarLista(Grid,_Paxth,_NumOfColumns,Potencia,Resultante),
-	eliminar_ultimo(_Paxth,PathAux),
-	ordenar_por_x(_Paxth,PathAux2),
+	eliminarUltimo(_Paxth,PathAux),
+	ordenarPorX(_Paxth,PathAux2),
 	gravedad(Resultante,PathAux2,_NumOfColumns,Res),
 	reemplazarCeros(Res,Res2),
 	RGrids = [Resultante,Res,Res2].
-		% Esto sirve para encontrar el numero a eliminar en la grilla --> (X * NumOfColumns) + (Y mod NumOfColumns)
+		% formula para transformar una coordenada en indice--> (X * NumOfColumns) + (Y mod NumOfColumns)
 
 	% calcula la suma de los números  que forman parte de un  path
 	sumarPath(Grid, [],_, 0).
@@ -157,7 +157,7 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 		bajarTodo(NuevoIndice, Grid,NumOfColumns, NuevaGrid).
 
 	% ordena una lista de pares, de forma descendente con respecto a sus componentes x.
-	ordenar_por_x(Lista, Resultado) :- 
+	ordenarPorX(Lista, Resultado) :- 
 		sort(0, @=<, Lista, Resultado).
 
 	% caso base.
@@ -172,8 +172,8 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 		reemplazarCeros(Cola, Cola2).
 
 
-	eliminar_ultimo([_], []).
-		eliminar_ultimo([X|Xs], [X|Ys]) :- eliminar_ultimo(Xs, Ys).
+	eliminarUltimo([_], []).
+		eliminarUltimo([X|Xs], [X|Ys]) :- eliminarUltimo(Xs, Ys).
 
 
 	% genera una potencia de 2 elevado a un numero aleatorio entre 1 y 12.
