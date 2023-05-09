@@ -123,10 +123,11 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
-      <button className="boton-booster" onClick={handleClick}>Colapsar Iguales</button>
         {path.length > 0 ?
           <Square className={"nextSquare"} value={joinResult(path, grid, numOfColumns)} /> :
-          <div className="score">{score}</div>}
+          <div className="score">
+          <div className="score-text">score</div>
+          <div className="score-value">{score}</div></div>}
       </div>
       <Board
         grid={grid}
@@ -135,6 +136,7 @@ function Game() {
         onPathChange={onPathChange}
         onDone={onPathDone}
       />
+      <button className="boton-booster" onClick={handleClick}>Colapsar Iguales</button>
     </div>
   );
 }

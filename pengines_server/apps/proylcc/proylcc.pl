@@ -178,7 +178,7 @@ join(Grid, _NumOfColumns, _Paxth, RGrids):-
 
 	% genera una potencia de 2 elevado a un numero aleatorio entre 1 y 12.
    	potencia_aleatoria(Num, Potencia) :-
-    	random_between(1, 12, Aleatorio),
+    	random_between(1, 8, Aleatorio),
     	Potencia is Num ** Aleatorio.
 
 	%reemplaza un elemento en una lista.	
