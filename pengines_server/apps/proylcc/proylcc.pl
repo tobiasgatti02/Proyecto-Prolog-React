@@ -196,8 +196,9 @@ booster(Grid,NumOfColumns,RGrids):-
 	eliminarBooster(Grid,ResAux2,NumOfColumns,ResFinal),
 	traducirIndicesACoordenadas(ListaGruposAplanada,[],NumOfColumns,ListaCoordenadasGrupos),
 	gravedad(ResFinal,ListaCoordenadasGrupos,NumOfColumns,Res),
-	reemplazarCeros(Res,Res2),
-	RGrids = [ResFinal,Res,Res2].
+	gravedad(Res,ListaCoordenadasGrupos,NumOfColumns,Res2),
+	reemplazarCeros(Res2,Res3),
+	RGrids = [ResFinal,Res2,Res3].
 	
 /* elimina listas vacias de una lista que las contiene
 * caso base: lista vacía
