@@ -17,6 +17,8 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [isCoolingDown, setIsCoolingDown] = useState(false);
+
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -90,15 +92,29 @@ function Game() {
     });
   }
   const handleClick = () => {
+    // Si ya se está enfriando, no hacer nada
+    if (isCoolingDown) {
+      return;
+    }
+  
     const gridS = JSON.stringify(grid);
-    const queryS = "booster(" + gridS + ","+ numOfColumns + ", RGrids)";
-    setWaiting(true);
+    const queryS = "booster(" + gridS + "," + numOfColumns + ", RGrids)";
+    
+    // Activar el enfriamiento
+    setIsCoolingDown(true);
+  
     pengine.query(queryS, (success, response) => {
       if (success) {
         animateEffect(response['RGrids']);
       }
+  
+      // Desactivar el enfriamiento después de 3 segundos
+      setTimeout(() => {
+        setIsCoolingDown(false);
+      }, 3000);
     });
   };
+  
 
   /**
    * Displays each grid of the sequence as the current grid in 1sec intervals.
@@ -136,7 +152,10 @@ function Game() {
         onPathChange={onPathChange}
         onDone={onPathDone}
       />
-      <button className="boton-booster" onClick={handleClick}>Colapsar Iguales</button>
+      <button className={`boton-booster ${isCoolingDown ? 'disabled-button' : ''}`} onClick={handleClick} disabled={isCoolingDown}>
+        Colapsar Iguales
+      </button>
+
     </div>
   );
 }

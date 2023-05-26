@@ -58,6 +58,9 @@ body {
   border-radius: 1%;
   opacity: 85%;
 }
+.disabled-button {
+  background-color: gray;
+}
 
 .squares {
   position: relative;
