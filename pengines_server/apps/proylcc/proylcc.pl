@@ -206,11 +206,16 @@ booster(Grid,NumOfColumns,RGrids):-
 eliminarListasVacias([], []).
 
 % caso recursivo. se elimina la cabeza de la lista si la misma es una lista vacia.
-eliminarListasVacias([[]|Cola], Res) :- 
-	eliminarListasVacias(Cola, Res).
-	eliminarListasVacias([Cabeza|Cola], [Cabeza|Res]) :- 
-	Cabeza \= [], 
-	eliminarListasVacias(Cola, Res). % conserva la lista no vacía
+eliminarListasVacias([Cabeza|Cola], Res) :-
+	length(Cabeza, Largo),
+	Largo \= 1,
+	eliminarListasVacias(Cola, ResAux),
+	Res = [Cabeza| ResAux].
+	 % conserva la lista de largo distinto a un elemento
+
+eliminarListasVacias([Cabeza|Cola], Res) :-
+	eliminarListasVacias(Cola, ResAux),
+	Res = ResAux.
 
 % Caso base.
 eliminarBooster(Grid,[],_NumOfColumns,Grid).  
@@ -292,203 +297,58 @@ agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,Indice,ListaGrup
 agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,NuevoIndice,ListaGruposRes):-
 	ListaGruposRes = ListaGrupos.
 
-/*
-*	transforma el indice recibido en coordenadas X e Y, y llama al metodo que segun el caso en el que se esté, va a chequear los bloques adyacentes correspondientes
-*/	
-agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,ResAux):-
+
+agregarAGrupoAux(_Grid,NumOfColumns,_CantidadFilas,ListaGrupo,_Valor,Indice,ResAux):-
+	not(member(Indice,ListaGrupo)),
+	NuevaListaGrupo = [Indice| ListaGrupo],
 	X is Indice div NumOfColumns,
 	Y is Indice mod NumOfColumns,
-	chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,NuevaListaGrupo),
-	ResAux = NuevaListaGrupo.
+	getIndicesAdyacentes(NumOfColumns,_CantidadFilas,Indice, X, Y, ListaIndices),
+	compararValores(_Grid,NumOfColumns, _CantidadFilas, ListaIndices,_Valor, NuevaListaGrupo, Resultado),
+	ResAux = Resultado.
 	
 agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,[]).
 
-%	caso aux 1. grid de una sola fila e Y = 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):-
-	CantidadFilas =:= 1,
-	Y =:= 0,
-	NuevoIndice is Indice + 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	Resultado = NuevaLista.
-%	caso aux 2. grid de una sola fila e Y \= 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):-
-	CantidadFilas =:= 1,
-	Y \= 0,
-	NuevoIndice is Indice + 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	Resultado = NuevaLista2.
+getIndicesAdyacentes(NumOfColumns, _CantidadFilas, Indice,_X, _Y, Res) :-
+	Indice1 is Indice + (NumOfColumns + 1),
+    Indice2 is Indice + NumOfColumns,
+    Indice3 is Indice + (NumOfColumns - 1),
+    Indice4 is Indice + 1,
+    Indice5 is Indice - (NumOfColumns - 1),
+    Indice6 is Indice - NumOfColumns,
+    Indice7 is Indice - (NumOfColumns + 1),
+    Indice8 is Indice - 1,
+    Lista = [Indice1 , Indice2 , Indice3 , Indice4 , Indice5 , Indice6 , Indice7 , Indice8],
+	verificarListaIndices(Lista, NumOfColumns, _CantidadFilas,_X, _Y, ResAux),
+	Res = ResAux.
 
-%	caso aux 3. grid de una sola fila e Y = NumOfColumns - 1
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	CantidadFilas =:= 1,
-	Y =:= (NumOfColumns - 1),
-	NuevoIndice is Indice - 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	Resultado = NuevaLista.
+verificarListaIndices([],_,_,_,_,[]).
 
-%	caso 1 : X = 0 e Y = 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):-
-	X =:= 0,
-	Y =:= 0,
-	NuevoIndice is Indice + 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice + (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	Resultado = NuevaLista3.
-	
-% 	caso 2: X \=0 e Y = 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):-  
-	X \= 0,
-	Y =:= 0,
-	NuevoIndice is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice + 1,
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	NuevoIndice4 is Indice + (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,NuevaLista3,Valor,CantidadFilas,NuevoIndice4,Indice,NuevaLista4),
-	NuevoIndice5 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista4,Valor,CantidadFilas,NuevoIndice5,Indice,NuevaLista5),
-	Resultado = NuevaLista5.
-		
-% 	caso 3: X = cantidad de filas -1 e Y = 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):-  
-	X =:= CantidadFilas - 1,
-	Y =:= 0,
-	NuevoIndice is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice + 1,
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	Resultado = NuevaLista3.
+verificarListaIndices([Cabeza|Cola], NumOfColumns, CantidadFilas, X, Y, Res):-
+	Cabeza >= 0,
+	Cabeza =< (NumOfColumns * CantidadFilas),
+	CabezaX is Cabeza div NumOfColumns,
+	CabezaY is Cabeza mod NumOfColumns,
+	CabezaX >= X - 1,
+	CabezaX =< X + 1,
+	CabezaY >= Y - 1,
+	CabezaY =< Y + 1,
+	verificarListaIndices(Cola, NumOfColumns, CantidadFilas, X, Y,  ResAux),
+	Res = [Cabeza| ResAux].
+verificarListaIndices([_Cabeza|Cola], _NumOfColumns, _CantidadFilas,_X, _Y, Res):-
+	verificarListaIndices(Cola, _NumOfColumns, _CantidadFilas, _X, _Y, ResAux),
+	Res = ResAux.
 
-% 	caso 4: X = 0 e Y \= 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	X =:= 0,
-	Y \= 0,
-	NuevoIndice is Indice - 1,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice + 1,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice + (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	NuevoIndice4 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista3,Valor,CantidadFilas,NuevoIndice4,Indice,NuevaLista4),
-	NuevoIndice5 is Indice + (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista4,Valor,CantidadFilas,NuevoIndice5,Indice,NuevaLista5),
-	Resultado = NuevaLista5.
-	
-% 	caso 5 X = 0 e Y = Num de Columnas - 1
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	X =:= 0,
-	Y \= NumOfColumns -1 ,
-	NuevoIndice is Indice - 1 ,
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice + (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	Resultado = NuevaLista3.
+compararValores(_Grid,_NumOfColumns,_CantidadFilas,[],_Valor,Lista, Lista).
 
-% 	caso 6: X \=0 e Y = Num de Columnas - 1
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	X \= 0,
-	Y =:= NumOfColumns-1,
-	NuevoIndice is Indice - (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice - 1,
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	NuevoIndice4 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista3,Valor,CantidadFilas,NuevoIndice4,Indice,NuevaLista4),
-	NuevoIndice5 is Indice + (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista4,Valor,CantidadFilas,NuevoIndice5,Indice,NuevaLista5),
-	Resultado = NuevaLista5.
-
-% 	caso 7: X = Cantidad Filas - 1 e Y = Num de Columnas - 1
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	X =:= CantidadFilas-1,
-	Y =:= NumOfColumns-1,
-	NuevoIndice is Indice - (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice - 1,
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	Resultado = NuevaLista3.
-
-% 	caso 8 : X = 0 e Y \= 0
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- 
-	X =:= CantidadFilas - 1,
-	Y \= 0,
-	NuevoIndice is Indice - (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice - (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	NuevoIndice4 is Indice - 1,
-	compararValores(Grid,NumOfColumns,NuevaLista3,Valor,CantidadFilas,NuevoIndice4,Indice,NuevaLista4),
-	NuevoIndice5 is Indice + 1,
-	compararValores(Grid,NumOfColumns,NuevaLista4,Valor,CantidadFilas,NuevoIndice5,Indice,NuevaLista5),
-	Resultado = NuevaLista5.
-
-% 	caso 9 : X < CantidadFilas - 1, X > 0, Y > 0, Y < NumofColumns - 1.
-chequearCaso(Grid,Indice,X,Y,NumOfColumns,Valor,ListaGrupo,CantidadFilas,Resultado):- % caso 9 : X < CantidadFilas - 1, X > 0, Y > 0, Y < NumofColumns - 1.
-	X < CantidadFilas - 1,
-	X > 0,
-	Y > 0,
-	Y < NumOfColumns - 1,
-	NuevoIndice is Indice - (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,ListaGrupo,Valor,CantidadFilas,NuevoIndice,Indice,NuevaLista),
-	NuevoIndice2 is Indice - NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista,Valor,CantidadFilas,NuevoIndice2,Indice,NuevaLista2),
-	NuevoIndice3 is Indice - (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista2,Valor,CantidadFilas,NuevoIndice3,Indice,NuevaLista3),
-	NuevoIndice4 is Indice - 1,
-	compararValores(Grid,NumOfColumns,NuevaLista3,Valor,CantidadFilas,NuevoIndice4,Indice,NuevaLista4),
-	NuevoIndice5 is Indice + 1,
-	compararValores(Grid,NumOfColumns,NuevaLista4,Valor,CantidadFilas,NuevoIndice5,Indice,NuevaLista5),
-	NuevoIndice6 is Indice + (NumOfColumns + 1),
-	compararValores(Grid,NumOfColumns,NuevaLista5,Valor,CantidadFilas,NuevoIndice6,Indice,NuevaLista6),
-	NuevoIndice7 is Indice + NumOfColumns,
-	compararValores(Grid,NumOfColumns,NuevaLista6,Valor,CantidadFilas,NuevoIndice7,Indice,NuevaLista7),
-	NuevoIndice8 is Indice + (NumOfColumns - 1),
-	compararValores(Grid,NumOfColumns,NuevaLista7,Valor,CantidadFilas,NuevoIndice8,Indice,NuevaLista8),
-	Resultado = NuevaLista8.
-
-/*
-*	compara valores entre dos posiciones de la grid para saber si pertenecen al mismo grupo
-*	se chequea que los dos no sean miembros ya de la lista de listas de indices (caso en el que el indice inicial del grupo todavia no se agrego a la lista)
-*/
-compararValores(Grid,NumOfColumns,Lista,Valor,CantidadFilas,IndiceNuevo,IndiceInicialGrupo,Nueva):-
-	nth0(IndiceNuevo, Grid, NuevoValor),
-	not(member(IndiceNuevo,Lista)),
+compararValores(Grid,_NumOfColumns,_CantidadFilas,[Cabeza|Cola], Valor, Lista, ListaResultante):-
+	not(member(Cabeza,Lista)),
+	nth0(Cabeza, Grid, NuevoValor),
 	Valor =:= NuevoValor,
-	not(member(IndiceInicialGrupo,Lista)),
-	NuevaLista =[IndiceNuevo|Lista],
-	NuevaLista2 = [IndiceInicialGrupo|NuevaLista],
-	agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,NuevaLista2,Valor,IndiceNuevo,ResAux),
-	Nueva = ResAux.
+	agregarAGrupoAux(Grid,_NumOfColumns,_CantidadFilas,Lista,Valor,Cabeza,ResAux),
+	compararValores(Grid,_NumOfColumns,_CantidadFilas,Cola, Valor, ResAux, ListaResultanteAux),
+	ListaResultante = ListaResultanteAux.
 
-/*
-*	compara valores entre dos posiciones de la grid para saber si pertenecen al mismo grupo
-*	se entra cuando el indice inicial del grupo ya es es parte de la lista
-*/
-compararValores(Grid,NumOfColumns,Lista,Valor,CantidadFilas,IndiceNuevo,_IndiceInicialGrupo,Nueva):-
-	nth0(IndiceNuevo, Grid, NuevoValor),
-	not(member(IndiceNuevo,Lista)),
-	Valor =:= NuevoValor,
-	NuevaLista =[IndiceNuevo|Lista],
-	agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,NuevaLista,Valor,IndiceNuevo,ResAux),
-	Nueva = ResAux.
-
-% 	se llega cuando los dos indices ya forman parte de la lista
-compararValores(_Grid,_NumOfColumns,Lista,_Valor,_CantidadFilas,_IndiceNuevo,_IndiceInicialGrupo,Lista).
+compararValores(_Grid,_NumOfColumns,_CantidadFilas,[Cabeza|Cola],_Valor,_Lista, ListaResultante):-
+	compararValores(_Grid,_NumOfColumns,_CantidadFilas,Cola, _Valor, _Lista, ListaResultanteAux),
+	ListaResultante = ListaResultanteAux.
