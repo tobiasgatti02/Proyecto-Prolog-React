@@ -54,13 +54,11 @@ body {
 .board {
   margin: 20px;
   position: relative;
-  background-color: rgb(221, 175, 175);
+  background-color: black;
   border-radius: 1%;
   opacity: 85%;
 }
-.disabled-button {
-  background-color: gray;
-}
+
 
 .squares {
   position: relative;
@@ -142,11 +140,20 @@ body {
   color: black;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   cursor: pointer;
-  background-color:antiquewhite ;
+  background-color:white ;
   font-weight:bold;
   white-space:pre-wrap;
 }
 .boton-booster:hover {
   background-color:white ;
-  color: brown;
+  color: rgb(153, 76, 0);;
+}
+
+.disabled-button {
+  color: gray;
+  
+}
+.disabled-button:hover {
+  background-color:white ;
+  color:gray;
 }
