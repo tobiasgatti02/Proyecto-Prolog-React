@@ -9,19 +9,18 @@
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Paxth
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
-join(Grid, _NumOfColumns, _Paxth, RGrids):-
-	sumarPath(Grid, _Paxth, _NumOfColumns, Suma),
+join(Grid, NumOfColumns, Paxth, RGrids):-
+	sumarPath(Grid, Paxth, NumOfColumns, Suma),
     menorPotenciaDe2(Suma, Potencia),
-	eliminarLista(Grid,_Paxth,_NumOfColumns,Potencia,Resultante),
-	eliminarUltimo(_Paxth,PathAux),
-	ordenarPorX(_Paxth,PathAux2),
-	gravedad(Resultante,PathAux2,_NumOfColumns,Res),
+	eliminarLista(Grid,Paxth,NumOfColumns,Potencia,Resultante),
+	ordenarPorX(Paxth,PathAux2),
+	gravedad(Resultante,PathAux2,NumOfColumns,Res),
 	reemplazarCeros(Res,Res2),
 	RGrids = [Resultante,Res,Res2].
 		
 
 % calcula la suma de los números  que forman parte de un  path
-sumarPath(Grid, [],_, 0).
+sumarPath(_, [],_, 0).
 sumarPath(Grid, [[X,Y]|Resto],NumOfColumns, Suma) :-
 	Posicion is X * NumOfColumns + Y,
 	nth0(Posicion, Grid, Numero),% este predicado es predefinido por prolog y encuentra en una lista una posicion
@@ -33,16 +32,16 @@ menorPotenciaDe2(N, Potencia) :-
 	Potencia is 2 ** (ceil(log(N)/log(2))).
 
 
-eliminarLista(Grid, [], _NumOfColumns,_Potencia, Grid):-  % Caso base, lista vacía
-	Grid = Res. 
+eliminarLista(Grid, [], _NumOfColumns,_Potencia, Grid).  % Caso base, lista vacía
+	 
 
 /** caso recursivo 1.
 *   si es el ultimo elemento de la cola, llamamos al predicado que reemplaza
 *	ese ultimo elemento por la potencia correspondiente.
 */
-eliminarLista(Grid, [Coordenada|Cola], _NumOfColumns,_Potencia, Res):- 
+eliminarLista(Grid, [Coordenada|Cola], NumOfColumns,Potencia, Res):- 
 	length(Cola, 0),
-	separarParAux(Grid, Coordenada, _NumOfColumns,_Potencia, ResAux),
+	separarParAux(Grid, Coordenada, NumOfColumns,Potencia, ResAux),
 	Res = ResAux.
 	
 /** caso recursivo 2.
@@ -54,7 +53,7 @@ eliminarLista(Grid, [Coordenada|Cola], NumOfColumns,Potencia, Resultante) :-
 	eliminarLista(Res, Cola, NumOfColumns, Potencia, Resultante).
 
  % Caso base, lista vacía
-separarPar(Grid,[],_,_).
+separarPar(_,[],_,_).
 
 /** caso recursivo.
 *   se separa el par de coordenadas y se llama al predicado eliminar para reemplazar
@@ -77,7 +76,7 @@ separarParAux(Grid,[X|Y],NumOfColumns,Potencia, Res):-
 	Res = ResAux.	
 
 % se ingresa en caso de que el contador llegue a la posicion que buscamos.se reemplaza el contenido en esa posicion por 0	
-eliminar([Cabeza|Cola],Posicion,Contador,Res):- 
+eliminar([_Cabeza|Cola],Posicion,Contador,Res):- 
 	Contador =:= Posicion,
 	NuevaCabeza is 0, 
 	Res = [NuevaCabeza|Cola].
@@ -89,16 +88,16 @@ eliminar([Cabeza|Cola],Posicion,Contador,Res):-
 	Res = [Cabeza|ResAux].
 
 % % se ingresa en caso de que el contador llegue a la posicion que buscamos.se reemplaza el contenido en esa posicion por la potencia resultantedel camino
-reemplazarPorPotencia([Cabeza|Cola],Posicion,Contador,Potencia,Res):- 
+reemplazarPorPotencia([_Cabeza|Cola],Posicion,Contador,Potencia,Res):- 
 	Contador =:= Posicion,
 	NuevaCabeza is Potencia,
 	Res = [NuevaCabeza|Cola].
 
 %itera sobre la grid mientras no haya llegado a la posicion a eliminar	
-reemplazarPorPotencia([Cabeza|Cola],Posicion,Contador,_Potencia, Res):-
+reemplazarPorPotencia([Cabeza|Cola],Posicion,Contador,Potencia, Res):-
    	NuevoContador is Contador + 1,
-	reemplazarPorPotencia(Cola,Posicion,NuevoContador,_Potencia, _ResAux),
-	Res = [Cabeza|_ResAux].
+	reemplazarPorPotencia(Cola,Posicion,NuevoContador,Potencia, ResAux),
+	Res = [Cabeza|ResAux].
 
 
 % caso base. cuando el path este vacío se devuelve la Grid pasada como parametro.
@@ -112,7 +111,7 @@ gravedad(Grid,[],_NumOfColumns, Grid).
 */
 gravedad(Grid,[Cabeza|Cola],NumOfColumns, NuevaGrid):-
 	Cabeza = [X|Y],
-	Y = [P|Q],
+	Y = [P|_Q],
 	Indice is (X * NumOfColumns) + (P mod NumOfColumns),
 	bajarTodo(Indice,Grid,NumOfColumns,NuevaGridAux),
 	gravedad(NuevaGridAux,Cola,NumOfColumns,NuevaGridAux2),
@@ -213,7 +212,7 @@ eliminarListasDeUnElemento([Cabeza|Cola], Res) :-
 	Res = [Cabeza| ResAux].
 	 % conserva la lista de largo distinto a un elemento
 
-eliminarListasDeUnElemento([Cabeza|Cola], Res) :-
+eliminarListasDeUnElemento([_Cabeza|Cola], Res) :-
 	eliminarListasDeUnElemento(Cola, ResAux),
 	Res = ResAux.
 
@@ -230,21 +229,21 @@ eliminarBooster(Grid,[Cabeza|Cola],NumOfColumns,NuevaGrid):-
 * 	en un 0, reemplazando el de mas abajo a la derecha por la potencia resultante correspondiente a la suma
 * 	de los contenidos de los indices a eliminar
 */
-eliminarBoosterAux(Grid,Grupo,_NumOfColumns, NuevaGrid):-  
-	traducirIndicesACoordenadas(Grupo,[],_NumOfColumns,ListaCoordenadasGrupo), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
-	sumarPath(Grid, ListaCoordenadasGrupo, _NumOfColumns, Suma),
+eliminarBoosterAux(Grid,Grupo,NumOfColumns, NuevaGrid):-  
+	traducirIndicesACoordenadas(Grupo,[],NumOfColumns,ListaCoordenadasGrupo), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasGrupo, NumOfColumns, Suma),
    	menorPotenciaDe2(Suma, Potencia),
 	ordenarListaRespectoAXeY(ListaCoordenadasGrupo, Ordenada),
-	eliminarLista(Grid,Ordenada,_NumOfColumns,Potencia,Resultante),
+	eliminarLista(Grid,Ordenada,NumOfColumns,Potencia,Resultante),
 	NuevaGrid = Resultante.
 	
 % caso base, lista vacia.
 traducirIndicesACoordenadas([],ListaCoordenadasGrupo,_NumOfColumns,ListaCoordenadasGrupo). 
 	
 % Caso recursivo, este metodo traduce una lista de indices a lista de coordenadas X e Y que representan las filas y columnas de la Grid respectivamente.
-traducirIndicesACoordenadas([Cabeza|Cola],ListaCoordenadasGrupo,_NumOfColumns,Res):-
-	armarCoordenada(Cabeza,ListaCoordenadasGrupo,_NumOfColumns,ResAux),
-	traducirIndicesACoordenadas(Cola,ResAux,_NumOfColumns,Res).
+traducirIndicesACoordenadas([Cabeza|Cola],ListaCoordenadasGrupo,NumOfColumns,Res):-
+	armarCoordenada(Cabeza,ListaCoordenadasGrupo,NumOfColumns,ResAux),
+	traducirIndicesACoordenadas(Cola,ResAux,NumOfColumns,Res).
 	
 % calcula la coordenada a parti del indice.
 armarCoordenada(Indice,ListaCoordenadasGrupo,NumOfColumns,ListaCoordenadasGrupoAux):-
@@ -294,22 +293,22 @@ agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,Indice,ListaGrup
 	ListaGruposResultante = ListaGruposRes.
 
 % 	se llega a este punto cuando el indice esta fuera del alcance de la Grid, devuelve la lista de grupos que le llega	
-agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,NuevoIndice,ListaGruposRes):-
+agregarAListaGrupos(_Grid,_NumOfColumns,ListaGrupos,_CantidadFilas,_NuevoIndice,ListaGruposRes):-
 	ListaGruposRes = ListaGrupos.
 
 
-agregarAGrupoAux(_Grid,NumOfColumns,_CantidadFilas,ListaGrupo,_Valor,Indice,ResAux):-
+agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,ResAux):-
 	not(member(Indice,ListaGrupo)),
 	NuevaListaGrupo = [Indice| ListaGrupo],
 	X is Indice div NumOfColumns,
 	Y is Indice mod NumOfColumns,
-	getIndicesAdyacentes(NumOfColumns,_CantidadFilas,Indice, X, Y, ListaIndices),
-	compararValores(_Grid,NumOfColumns, _CantidadFilas, ListaIndices,_Valor, NuevaListaGrupo, Resultado),
+	getIndicesAdyacentes(NumOfColumns,CantidadFilas,Indice, X, Y, ListaIndices),
+	compararValores(Grid,NumOfColumns, CantidadFilas, ListaIndices,Valor, NuevaListaGrupo, Resultado),
 	ResAux = Resultado.
 	
-agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,[]).
+agregarAGrupoAux(_,_,_,_,_,_,[]).
 
-getIndicesAdyacentes(NumOfColumns, _CantidadFilas, Indice,_X, _Y, Res) :-
+getIndicesAdyacentes(NumOfColumns, CantidadFilas, Indice,X, Y, Res) :-
 	Indice1 is Indice + (NumOfColumns + 1),
     Indice2 is Indice + NumOfColumns,
     Indice3 is Indice + (NumOfColumns - 1),
@@ -319,7 +318,7 @@ getIndicesAdyacentes(NumOfColumns, _CantidadFilas, Indice,_X, _Y, Res) :-
     Indice7 is Indice - (NumOfColumns + 1),
     Indice8 is Indice - 1,
     Lista = [Indice1 , Indice2 , Indice3 , Indice4 , Indice5 , Indice6 , Indice7 , Indice8],
-	verificarListaIndices(Lista, NumOfColumns, _CantidadFilas,_X, _Y, ResAux),
+	verificarListaIndices(Lista, NumOfColumns, CantidadFilas,X, Y, ResAux),
 	Res = ResAux.
 
 verificarListaIndices([],_,_,_,_,[]).
@@ -335,20 +334,20 @@ verificarListaIndices([Cabeza|Cola], NumOfColumns, CantidadFilas, X, Y, Res):-
 	CabezaY =< Y + 1,
 	verificarListaIndices(Cola, NumOfColumns, CantidadFilas, X, Y,  ResAux),
 	Res = [Cabeza| ResAux].
-verificarListaIndices([_Cabeza|Cola], _NumOfColumns, _CantidadFilas,_X, _Y, Res):-
-	verificarListaIndices(Cola, _NumOfColumns, _CantidadFilas, _X, _Y, ResAux),
+verificarListaIndices([_Cabeza|Cola], NumOfColumns, CantidadFilas,X, Y, Res):-
+	verificarListaIndices(Cola, NumOfColumns, CantidadFilas, X, Y, ResAux),
 	Res = ResAux.
 
 compararValores(_Grid,_NumOfColumns,_CantidadFilas,[],_Valor,Lista, Lista).
 
-compararValores(Grid,_NumOfColumns,_CantidadFilas,[Cabeza|Cola], Valor, Lista, ListaResultante):-
+compararValores(Grid,NumOfColumns,CantidadFilas,[Cabeza|Cola], Valor, Lista, ListaResultante):-
 	not(member(Cabeza,Lista)),
 	nth0(Cabeza, Grid, NuevoValor),
 	Valor =:= NuevoValor,
-	agregarAGrupoAux(Grid,_NumOfColumns,_CantidadFilas,Lista,Valor,Cabeza,ResAux),
-	compararValores(Grid,_NumOfColumns,_CantidadFilas,Cola, Valor, ResAux, ListaResultanteAux),
+	agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,Lista,Valor,Cabeza,ResAux),
+	compararValores(Grid,NumOfColumns,CantidadFilas,Cola, Valor, ResAux, ListaResultanteAux),
 	ListaResultante = ListaResultanteAux.
 
-compararValores(_Grid,_NumOfColumns,_CantidadFilas,[Cabeza|Cola],_Valor,_Lista, ListaResultante):-
-	compararValores(_Grid,_NumOfColumns,_CantidadFilas,Cola, _Valor, _Lista, ListaResultanteAux),
+compararValores(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],Valor,Lista, ListaResultante):-
+	compararValores(Grid,NumOfColumns,CantidadFilas,Cola, Valor, Lista, ListaResultanteAux),
 	ListaResultante = ListaResultanteAux.
