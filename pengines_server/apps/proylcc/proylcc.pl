@@ -191,7 +191,7 @@ booster(Grid,NumOfColumns,RGrids):-
 	ListaGrupos = [],
 	Indice = 0,
 	agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,Indice,ResAux),
-	eliminarListasVacias(ResAux,ResAux2),
+	eliminarListasDeUnElemento(ResAux,ResAux2),
 	flatten(ResAux2,ListaGruposAplanada),
 	eliminarBooster(Grid,ResAux2,NumOfColumns,ResFinal),
 	traducirIndicesACoordenadas(ListaGruposAplanada,[],NumOfColumns,ListaCoordenadasGrupos),
@@ -203,18 +203,18 @@ booster(Grid,NumOfColumns,RGrids):-
 /* elimina listas vacias de una lista que las contiene
 * caso base: lista vacía
 */
-eliminarListasVacias([], []).
+eliminarListasDeUnElemento([], []).
 
 % caso recursivo. se elimina la cabeza de la lista si la misma es una lista vacia.
-eliminarListasVacias([Cabeza|Cola], Res) :-
+eliminarListasDeUnElemento([Cabeza|Cola], Res) :-
 	length(Cabeza, Largo),
 	Largo \= 1,
-	eliminarListasVacias(Cola, ResAux),
+	eliminarListasDeUnElemento(Cola, ResAux),
 	Res = [Cabeza| ResAux].
 	 % conserva la lista de largo distinto a un elemento
 
-eliminarListasVacias([Cabeza|Cola], Res) :-
-	eliminarListasVacias(Cola, ResAux),
+eliminarListasDeUnElemento([Cabeza|Cola], Res) :-
+	eliminarListasDeUnElemento(Cola, ResAux),
 	Res = ResAux.
 
 % Caso base.
