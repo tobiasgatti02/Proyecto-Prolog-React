@@ -4,7 +4,7 @@
 		booster/3
 	]).
 
-/**
+/*
  * join(+Grid, +NumOfColumns, +Paxth, -RGrids) 
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Paxth
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
@@ -27,6 +27,8 @@ sumarPath(Grid, [[X,Y]|Resto],NumOfColumns, Suma) :-
 	sumarPath(Grid, Resto, NumOfColumns, SumaResto),
 	Suma is SumaResto + Numero.
 
+menorPotenciaDe2(0, 0).
+
 % encuentra la menor potencia de 2 mayor o igual que N
 menorPotenciaDe2(N, Potencia) :-
 	Potencia is 2 ** (ceil(log(N)/log(2))).
@@ -35,7 +37,7 @@ menorPotenciaDe2(N, Potencia) :-
 eliminarLista(Grid, [], _NumOfColumns,_Potencia, Grid).  % Caso base, lista vacía
 	 
 
-/** caso recursivo 1.
+/* caso recursivo 1.
 *   si es el ultimo elemento de la cola, llamamos al predicado que reemplaza
 *	ese ultimo elemento por la potencia correspondiente.
 */
@@ -44,7 +46,7 @@ eliminarLista(Grid, [Coordenada|Cola], NumOfColumns,Potencia, Res):-
 	separarParAux(Grid, Coordenada, NumOfColumns,Potencia, ResAux),
 	Res = ResAux.
 	
-/** caso recursivo 2.
+/* caso recursivo 2.
 *   si NO es el ultimo elemento de la cola, llamamos al predicado que reemplaza
 *	el elemento en cuestion por un 0.
 */
@@ -55,7 +57,7 @@ eliminarLista(Grid, [Coordenada|Cola], NumOfColumns,Potencia, Resultante) :-
  % Caso base, lista vacía
 separarPar(_,[],_,_).
 
-/** caso recursivo.
+/* caso recursivo.
 *   se separa el par de coordenadas y se llama al predicado eliminar para reemplazar
 *	la posicion correspondiente en la grid por 0.
 */
@@ -296,7 +298,10 @@ agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,Indice,ListaGrup
 agregarAListaGrupos(_Grid,_NumOfColumns,ListaGrupos,_CantidadFilas,_NuevoIndice,ListaGruposRes):-
 	ListaGruposRes = ListaGrupos.
 
-
+/*
+*  si el indice no pertenece ya a la lista del grupo, se lo agrega, se llama al predicado getIndicesAdyacentes/6 y luego al predicado compararValores/7
+*  para seguir armando el grupo.
+*/
 agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,ResAux):-
 	not(member(Indice,ListaGrupo)),
 	NuevaListaGrupo = [Indice| ListaGrupo],
@@ -308,6 +313,7 @@ agregarAGrupoAux(Grid,NumOfColumns,CantidadFilas,ListaGrupo,Valor,Indice,ResAux)
 	
 agregarAGrupoAux(_,_,_,_,_,_,[]).
 
+% 	a partir de un Indice devuelve la lista de sus Indices adyacentes validos.
 getIndicesAdyacentes(NumOfColumns, CantidadFilas, Indice,X, Y, Res) :-
 	Indice1 is Indice + (NumOfColumns + 1),
     Indice2 is Indice + NumOfColumns,
@@ -321,8 +327,10 @@ getIndicesAdyacentes(NumOfColumns, CantidadFilas, Indice,X, Y, Res) :-
 	verificarListaIndices(Lista, NumOfColumns, CantidadFilas,X, Y, ResAux),
 	Res = ResAux.
 
-verificarListaIndices([],_,_,_,_,[]).
+% 	verifica que los indices pertenecientes a una lista sean realmente adyacentes a un indice, si no es asi los elimina de la lista.
+verificarListaIndices([],_,_,_,_,[]). % caso base
 
+%	primer caso recursivo: indice valido
 verificarListaIndices([Cabeza|Cola], NumOfColumns, CantidadFilas, X, Y, Res):-
 	Cabeza >= 0,
 	Cabeza =< (NumOfColumns * CantidadFilas),
@@ -334,12 +342,19 @@ verificarListaIndices([Cabeza|Cola], NumOfColumns, CantidadFilas, X, Y, Res):-
 	CabezaY =< Y + 1,
 	verificarListaIndices(Cola, NumOfColumns, CantidadFilas, X, Y,  ResAux),
 	Res = [Cabeza| ResAux].
+% 	segundo caso recursivo: indice invalido
 verificarListaIndices([_Cabeza|Cola], NumOfColumns, CantidadFilas,X, Y, Res):-
 	verificarListaIndices(Cola, NumOfColumns, CantidadFilas, X, Y, ResAux),
 	Res = ResAux.
 
+/*
+*	compara los valores (en la grid) de los indices pertenecientes a una lista pasada por parametro, para usarlos,
+*	en  el caso que sea posible para seguir construyendo el grupo de indices. 
+*/
+%	caso base
 compararValores(_Grid,_NumOfColumns,_CantidadFilas,[],_Valor,Lista, Lista).
 
+%	caso recursivo 1: el indice no es miembro de la lista del grupo, y el valor coincide con el valor del grupo. 
 compararValores(Grid,NumOfColumns,CantidadFilas,[Cabeza|Cola], Valor, Lista, ListaResultante):-
 	not(member(Cabeza,Lista)),
 	nth0(Cabeza, Grid, NuevoValor),
@@ -348,6 +363,93 @@ compararValores(Grid,NumOfColumns,CantidadFilas,[Cabeza|Cola], Valor, Lista, Lis
 	compararValores(Grid,NumOfColumns,CantidadFilas,Cola, Valor, ResAux, ListaResultanteAux),
 	ListaResultante = ListaResultanteAux.
 
+%	caso recursivo 2: el sindice o ya es miembro de la lista, o no coincide con el valor del grupo, por lo cual se descarta.
 compararValores(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],Valor,Lista, ListaResultante):-
 	compararValores(Grid,NumOfColumns,CantidadFilas,Cola, Valor, Lista, ListaResultanteAux),
 	ListaResultante = ListaResultanteAux.
+
+%////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+movidaMaxima(Grid,NumOfColumns,CaminoMaximo):-
+	length(Grid, Size),
+	CantidadFilas is Size/NumOfColumns,
+	Indice = 0,
+	MayorCaminoHastaElMomento = [],
+	movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice, MayorCaminoHastaElMomento,ResAux),
+	CaminoMaximo = ResAux.
+
+movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMomento,Resultado):-
+	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
+	Indice =< CantidadIndices,
+	nth0(Indice,Grid,Valor),
+	CaminoActual = [],
+	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,CaminoActual,Valor,Indice,MayorCaminoHastaElMomento,ResAux),
+	NuevoIndice is Indice + 1,
+	movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,NuevoIndice,ResAux,ListaCaminoRes),
+	Resultado = ListaCaminoRes.
+
+/*
+*	se llega a este metodo cuando el Indice sale del alcance de la Grid, por lo tanto el mayor camino es el almacenado hasta el momento.
+*	no hay mas por recorrer.
+*/
+movidaMaximaAuxiliar(_,_,_,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
+
+movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,MayorCaminoHastaElMomento,Resultado):-
+	not(member(Indice,ListaCamino)),
+	NuevaListaCamino = [Indice| ListaCamino],
+	X is Indice div NumOfColumns,
+	Y is Indice mod NumOfColumns,
+	getIndicesAdyacentes(NumOfColumns,CantidadFilas,Indice, X, Y, ListaIndices),
+	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, ListaIndices, Valor, NuevaListaCamino, MayorCaminoHastaElMomento, ResAux),
+	Resultado = ResAux.
+
+/*
+*	cuando la lista de indices está vacia, significa que la rama ya no puede continuar, por lo tanto se compara el camino 
+*	que se esta recorriendo con el almacenado como mayor hasta el momento.
+*/
+compararValoresMovidaMaxima(Grid,NumOfColumns,_,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
+   	menorPotenciaDe2(Suma, Potencia),
+	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasMayorCamino, NumOfColumns, SumaMayor),
+	menorPotenciaDe2(SumaMayor, PotenciaMayor),
+	Potencia >= PotenciaMayor,
+	Res = ListaCamino.
+
+/*	si el anterior falló, significa que el camino que se esta recorriendo no debe reemplazar al mayor hasta el momento.*/
+compararValoresMovidaMaxima(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
+	Res = MayorCaminoHastaElMomento.
+
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|_Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
+	%length(ListaCamino, Largo),
+	%Largo > 1,
+	not(member(Cabeza,ListaCamino)),
+	nth0(Cabeza, Grid, NuevoValor),
+	Valor =:= NuevoValor,
+	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Cabeza,MayorCaminoHastaElMomento,ResAux),
+	Resultado = ResAux. 
+	
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|_Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
+	length(ListaCamino, Largo),
+	Largo > 1,
+	not(member(Cabeza,ListaCamino)),
+	nth0(Cabeza, Grid, NuevoValor),
+	SiguientePotencia is Valor*2,
+	NuevoValor =:= SiguientePotencia,
+	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,SiguientePotencia,Cabeza,MayorCaminoHastaElMomento,ResAux),
+	Resultante = ResAux.
+
+/*
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, ResAux):-
+	length(ListaCamino, Largo),
+	Largo =< 1,
+	not(member(Cabeza,ListaCamino)),
+	nth0(Cabeza, Grid, NuevoValor),
+	Valor =:= NuevoValor,
+	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Cabeza,Mayor,ResAux),
+	compararValoresMovidaMaxima(Grid,NumOfColumns,CantidadFilas,Cola,Valor,ResAux,Mayor,_ResultanteAux).
+*/
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], Valor, ListaCamino, Mayor, Resultado):-
+	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
+	Resultado = ResAux.
