@@ -137,7 +137,7 @@ bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
 *	inmediatamente superior si es distino de 0.
 */
 bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
-	Indice < CantidadIndices,
+	Indice =< CantidadIndices,
 	nth0(Indice,Grid,Temp),
 	Temp =:= 0,
 	Buscar is Indice - NumOfColumns,
@@ -146,15 +146,16 @@ bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
 	reemplazarElemento(Grid, Buscar, 0, Result2),
 	reemplazarElemento(Result2, Indice, ResAux, Result),
 	IndiceAnterior is Indice + NumOfColumns,
-	bajarTodo(IndiceAnterior,Result,NumOfColumns,CantidadIndices,ResAux2),
-	NuevaGrid = ResAux2.
+	bajarTodo(Buscar,Result,NumOfColumns,CantidadIndices,ResAux2),
+	bajarTodo(IndiceAnterior,ResAux2,NumOfColumns,CantidadIndices,ResAux3),
+	NuevaGrid = ResAux3.
 
 /*	caso recursivo 2.
 *	caso en el que NO se esta en la primer fila de la Grid
 *	si el elemento NO es 0, o el inmediatamente superior ya es 0, se llama recursivamente sin reemplazar
 */
 bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
-	Indice < CantidadIndices,
+	Indice =< CantidadIndices,
 	NuevoIndice is Indice - NumOfColumns,
 	bajarTodo(NuevoIndice, Grid,NumOfColumns,CantidadIndices, NuevaGrid).
 
