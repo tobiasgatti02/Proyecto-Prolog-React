@@ -10,11 +10,14 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 join(Grid, NumOfColumns, Paxth, RGrids):-
+	length(Grid, Size),
+	CantidadFilas is Size/NumOfColumns,
+	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
 	sumarPath(Grid, Paxth, NumOfColumns, Suma),
     menorPotenciaDe2(Suma, Potencia),
 	eliminarLista(Grid,Paxth,NumOfColumns,Potencia,Resultante),
 	ordenarPorX(Paxth,PathAux2),
-	gravedad(Resultante,PathAux2,NumOfColumns,Res),
+	gravedad(Resultante,PathAux2,NumOfColumns,CantidadIndices,Res),
 	reemplazarCeros(Res,Res2),
 	RGrids = [Resultante,Res,Res2].
 		
@@ -103,7 +106,7 @@ reemplazarPorPotencia([Cabeza|Cola],Posicion,Contador,Potencia, Res):-
 
 
 % caso base. cuando el path este vacío se devuelve la Grid pasada como parametro.
-gravedad(Grid,[],_NumOfColumns, Grid).
+gravedad(Grid,[],_NumOfColumns,_CantidadIndices, Grid).
 
 /*	caso recursivo.
 *	si el path NO esta vacío descompone la cabeza de la lista de entrada en las variables X e Y
@@ -111,18 +114,19 @@ gravedad(Grid,[],_NumOfColumns, Grid).
 * 	X seria la fila y P la columna en este punto,
 *	se calcula el indice a partir de X y P y se procede a llamar al metodo bajarTodo/4 y realizar el llamado recursivo
 */
-gravedad(Grid,[Cabeza|Cola],NumOfColumns, NuevaGrid):-
+gravedad(Grid,[Cabeza|Cola],NumOfColumns,CantidadIndices, NuevaGrid):-
 	Cabeza = [X|Y],
 	Y = [P|_Q],
 	Indice is (X * NumOfColumns) + (P mod NumOfColumns),
-	bajarTodo(Indice,Grid,NumOfColumns,NuevaGridAux),
-	gravedad(NuevaGridAux,Cola,NumOfColumns,NuevaGridAux2),
+	bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGridAux),
+	gravedad(NuevaGridAux,Cola,NumOfColumns,CantidadIndices,NuevaGridAux2),
 	NuevaGrid = NuevaGridAux2.
 
 	
 	
 %caso en el que se esta en la primer fila de la grid.
-bajarTodo(Indice,Grid,NumOfColumns,NuevaGrid):-
+bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
+	Indice < CantidadIndices,
 	Indice >= 0,
 	Indice =< (NumOfColumns - 1),
 	NuevaGrid = Grid.
@@ -132,7 +136,8 @@ bajarTodo(Indice,Grid,NumOfColumns,NuevaGrid):-
 *	si el elemento es 0, se busca hacia arriba y se baja el numero que esta en la posicion 
 *	inmediatamente superior si es distino de 0.
 */
-bajarTodo(Indice,Grid,NumOfColumns,NuevaGrid):-
+bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
+	Indice < CantidadIndices,
 	nth0(Indice,Grid,Temp),
 	Temp =:= 0,
 	Buscar is Indice - NumOfColumns,
@@ -140,16 +145,20 @@ bajarTodo(Indice,Grid,NumOfColumns,NuevaGrid):-
 	ResAux \= 0,
 	reemplazarElemento(Grid, Buscar, 0, Result2),
 	reemplazarElemento(Result2, Indice, ResAux, Result),
-	bajarTodo(Indice,Result,NumOfColumns,ResAux2),
+	IndiceAnterior is Indice + NumOfColumns,
+	bajarTodo(IndiceAnterior,Result,NumOfColumns,CantidadIndices,ResAux2),
 	NuevaGrid = ResAux2.
 
 /*	caso recursivo 2.
 *	caso en el que NO se esta en la primer fila de la Grid
 *	si el elemento NO es 0, o el inmediatamente superior ya es 0, se llama recursivamente sin reemplazar
 */
-bajarTodo(Indice,Grid,NumOfColumns,NuevaGrid):-
+bajarTodo(Indice,Grid,NumOfColumns,CantidadIndices,NuevaGrid):-
+	Indice < CantidadIndices,
 	NuevoIndice is Indice - NumOfColumns,
-	bajarTodo(NuevoIndice, Grid,NumOfColumns, NuevaGrid).
+	bajarTodo(NuevoIndice, Grid,NumOfColumns,CantidadIndices, NuevaGrid).
+
+bajarTodo(_,Grid,_,_,Grid).
 
 % ordena una lista de pares, de forma descendente con respecto a sus componentes x.
 ordenarPorX(Lista, Resultado) :- 
@@ -189,6 +198,7 @@ reemplazarElemento(Lista, Indice, Elemento, Result) :-
 booster(Grid,NumOfColumns,RGrids):-
 	length(Grid, Size),
 	CantidadFilas is Size/NumOfColumns,
+	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
 	ListaGrupos = [],
 	Indice = 0,
 	agregarAListaGrupos(Grid,NumOfColumns,ListaGrupos,CantidadFilas,Indice,ResAux),
@@ -196,8 +206,7 @@ booster(Grid,NumOfColumns,RGrids):-
 	flatten(ResAux2,ListaGruposAplanada),
 	eliminarBooster(Grid,ResAux2,NumOfColumns,ResFinal),
 	traducirIndicesACoordenadas(ListaGruposAplanada,[],NumOfColumns,ListaCoordenadasGrupos),
-	gravedad(ResFinal,ListaCoordenadasGrupos,NumOfColumns,Res),
-	gravedad(Res,ListaCoordenadasGrupos,NumOfColumns,Res2),
+	gravedad(ResFinal,ListaCoordenadasGrupos,NumOfColumns,CantidadIndices,Res2),
 	reemplazarCeros(Res2,Res3),
 	RGrids = [ResFinal,Res2,Res3].
 	
