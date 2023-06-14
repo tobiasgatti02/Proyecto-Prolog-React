@@ -157,3 +157,22 @@ body {
   background-color:white ;
   color:gray;
 }
+
+.boton-movida-maxima{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+  border-radius: 5px;
+  font-size: 25px;
+  color: black;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  cursor: pointer;
+  background-color:white ;
+  font-weight:bold;
+  white-space:pre-wrap;
+}
+.boton-movida-maxima:hover {
+  background-color:white ;
+  color: rgb(153, 76, 0);;
+}

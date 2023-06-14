@@ -1,7 +1,8 @@
 :- module(proylcc, 
 	[  
 		join/4,
-		booster/3
+		booster/3,
+		movidaMaxima/3
 	]).
 
 /*
@@ -386,7 +387,8 @@ movidaMaxima(Grid,NumOfColumns,CaminoMaximo):-
 	Indice = 0,
 	MayorCaminoHastaElMomento = [],
 	movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice, MayorCaminoHastaElMomento,ResAux),
-	CaminoMaximo = ResAux.
+	traducirIndicesACoordenadas(ResAux,[],NumOfColumns,ListaCoordenadasMayorCamino),
+	CaminoMaximo = ListaCoordenadasMayorCamino.
 
 movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMomento,Resultado):-
 	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
@@ -418,6 +420,8 @@ movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,M
 *	que se esta recorriendo con el almacenado como mayor hasta el momento.
 */
 compararValoresMovidaMaxima(Grid,NumOfColumns,_,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
+	length(ListaCamino,Largo),
+	Largo>1,
 	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
 	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
    	menorPotenciaDe2(Suma, Potencia),
@@ -431,16 +435,17 @@ compararValoresMovidaMaxima(Grid,NumOfColumns,_,[],_,ListaCamino,MayorCaminoHast
 compararValoresMovidaMaxima(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
 	Res = MayorCaminoHastaElMomento.
 
-compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|_Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
 	%length(ListaCamino, Largo),
 	%Largo > 1,
 	not(member(Cabeza,ListaCamino)),
 	nth0(Cabeza, Grid, NuevoValor),
 	Valor =:= NuevoValor,
 	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Cabeza,MayorCaminoHastaElMomento,ResAux),
-	Resultado = ResAux. 
+	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
+	Resultado = ResAux2. 
 	
-compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|_Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
+compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
 	length(ListaCamino, Largo),
 	Largo > 1,
 	not(member(Cabeza,ListaCamino)),
@@ -448,7 +453,8 @@ compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|_Cola], V
 	SiguientePotencia is Valor*2,
 	NuevoValor =:= SiguientePotencia,
 	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,SiguientePotencia,Cabeza,MayorCaminoHastaElMomento,ResAux),
-	Resultante = ResAux.
+	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
+	Resultante = ResAux2.
 
 /*
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, ResAux):-
