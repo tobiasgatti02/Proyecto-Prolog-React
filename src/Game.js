@@ -137,6 +137,29 @@ function Game() {
       }, 3000);
     });
   };
+
+  const movidaMaximaAdyacenteClick = () => {
+    // Si ya se está enfriando, no hacer nada
+    if (isCoolingDown) {
+      return;
+    }
+  
+    const gridS = JSON.stringify(grid);
+    const queryS = "movidaMaximaAdyacenteIgual(" + gridS + "," + numOfColumns + ", CaminoMaximo)";
+    setWaiting(true);
+    // Activar el enfriamiento
+    setIsCoolingDown(true);
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+        setPath(response['CaminoMaximo']);
+        setWaiting(false);
+      }
+      // Desactivar el enfriamiento después de 3 segundos
+      setTimeout(() => {
+        setIsCoolingDown(false);
+      }, 3000);
+    });
+  };
   
 
   /**
@@ -175,14 +198,16 @@ function Game() {
         onPathChange={onPathChange}
         onDone={onPathDone}
       />
-      <button className={`boton-booster ${isCoolingDown ? 'disabled-button' : ''}`} onClick={handleClick} disabled={isCoolingDown}>
+      <button className={`boton-poderes ${isCoolingDown ? 'disabled-button' : ''}`} onClick={handleClick} disabled={isCoolingDown}>
         Colapsar Iguales
       </button>
-      <button className={`boton-movida-maxima ${isCoolingDown ? 'disabled-button' : ''}`} onClick={movidaMaximaClick} disabled={isCoolingDown}>
+      <button className={`boton-poderes ${isCoolingDown ? 'disabled-button' : ''}`} onClick={movidaMaximaClick} disabled={isCoolingDown}>
         Movida Máxima
+      </button>
+      <button className={`boton-poderes ${isCoolingDown ? 'disabled-button' : ''}`} onClick={movidaMaximaAdyacenteClick} disabled={isCoolingDown}>
+        Movida Máxima adyacente igual
       </button>
     </div>
   );
 }
-
 export default Game;

@@ -456,16 +456,10 @@ compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Va
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
 	Resultante = ResAux2.
 
-/*
-compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, ResAux):-
-	length(ListaCamino, Largo),
-	Largo =< 1,
-	not(member(Cabeza,ListaCamino)),
-	nth0(Cabeza, Grid, NuevoValor),
-	Valor =:= NuevoValor,
-	movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Cabeza,Mayor,ResAux),
-	compararValoresMovidaMaxima(Grid,NumOfColumns,CantidadFilas,Cola,Valor,ResAux,Mayor,_ResultanteAux).
-*/
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], Valor, ListaCamino, Mayor, Resultado):-
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
 	Resultado = ResAux.
+
+
+
+%///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
