@@ -2,7 +2,8 @@
 	[  
 		join/4,
 		booster/3,
-		movidaMaxima/3
+		movidaMaxima/3,
+		movidaMaximaAdyacenteIgual/3
 	]).
 
 /*
@@ -31,7 +32,7 @@ sumarPath(Grid, [[X,Y]|Resto],NumOfColumns, Suma) :-
 	sumarPath(Grid, Resto, NumOfColumns, SumaResto),
 	Suma is SumaResto + Numero.
 
-menorPotenciaDe2(0, 0).
+menorPotenciaDe2(0, 0):-!.
 
 % encuentra la menor potencia de 2 mayor o igual que N
 menorPotenciaDe2(N, Potencia) :-
@@ -436,8 +437,6 @@ compararValoresMovidaMaxima(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
 	Res = MayorCaminoHastaElMomento.
 
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
-	%length(ListaCamino, Largo),
-	%Largo > 1,
 	not(member(Cabeza,ListaCamino)),
 	nth0(Cabeza, Grid, NuevoValor),
 	Valor =:= NuevoValor,
@@ -460,6 +459,138 @@ compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], V
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
 	Resultado = ResAux.
 
-
-
 %///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+movidaMaximaAdyacenteIgual(Grid,NumOfColumns,CaminoMaximo):-
+	length(Grid, Size),
+	CantidadFilas is Size/NumOfColumns,
+	Indice = 0,
+	MayorCaminoHastaElMomento = [],
+	movidaMaximaAdyacenteAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice, MayorCaminoHastaElMomento,ResAux),
+	traducirIndicesACoordenadas(ResAux,[],NumOfColumns,ListaCoordenadasMayorCamino),
+	CaminoMaximo = ListaCoordenadasMayorCamino.
+
+movidaMaximaAdyacenteAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMomento,Resultado):-
+	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
+	Indice =< CantidadIndices,
+	nth0(Indice,Grid,Valor),
+	CaminoActual = [],
+	movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,CaminoActual,Valor,Indice,MayorCaminoHastaElMomento,ResAux),
+	NuevoIndice is Indice + 1,
+	movidaMaximaAdyacenteAuxiliar(Grid,NumOfColumns,CantidadFilas,NuevoIndice,ResAux,ListaCaminoRes),
+	Resultado = ListaCaminoRes.
+
+/*
+*	se llega a este metodo cuando el Indice sale del alcance de la Grid, por lo tanto el mayor camino es el almacenado hasta el momento.
+*	no hay mas por recorrer.
+*/
+movidaMaximaAdyacenteAuxiliar(_,_,_,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
+
+movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,MayorCaminoHastaElMomento,Resultado):-
+	not(member(Indice,ListaCamino)),
+	NuevaListaCamino = [Indice| ListaCamino],
+	X is Indice div NumOfColumns,
+	Y is Indice mod NumOfColumns,
+	getIndicesAdyacentes(NumOfColumns,CantidadFilas,Indice, X, Y, ListaIndices),
+	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, ListaIndices, Valor, NuevaListaCamino, MayorCaminoHastaElMomento, ResAux),
+	Resultado = ResAux.
+
+compararValoresMovidaMaximaAdyacente(Grid,NumOfColumns,CantidadFilas,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
+	length(ListaCamino,Largo),
+	Largo > 1,
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
+	menorPotenciaDe2(Suma, Potencia),
+	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasMayorCamino, NumOfColumns, SumaMayor),
+	menorPotenciaDe2(SumaMayor, PotenciaMayor),
+	Potencia >= PotenciaMayor,
+	chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCaminoHastaElMomento,NuevoMayorCamino),
+	Res = NuevoMayorCamino.
+
+/*	si el anterior falló, significa que el camino que se esta recorriendo no debe reemplazar al mayor hasta el momento.*/
+compararValoresMovidaMaximaAdyacente(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
+	Res = MayorCaminoHastaElMomento.
+
+compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
+	%length(ListaCamino, Largo),
+	%Largo > 1,
+	not(member(Cabeza,ListaCamino)),
+	nth0(Cabeza, Grid, NuevoValor),
+	Valor =:= NuevoValor,
+	movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Cabeza,MayorCaminoHastaElMomento,ResAux),
+	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
+	Resultado = ResAux2. 
+	
+compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
+	length(ListaCamino, Largo),
+	Largo > 1,
+	not(member(Cabeza,ListaCamino)),
+	nth0(Cabeza, Grid, NuevoValor),
+	SiguientePotencia is Valor*2,
+	NuevoValor =:= SiguientePotencia,
+	movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,SiguientePotencia,Cabeza,MayorCaminoHastaElMomento,ResAux),
+	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
+	Resultante = ResAux2.
+	
+compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], Valor, ListaCamino, Mayor, Resultado):-
+	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
+	Resultado = ResAux.
+
+chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCaminoHastaElMomento,NuevoMayorCamino):-
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
+	menorPotenciaDe2(Suma, Potencia),
+	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	sumarPath(Grid, ListaCoordenadasMayorCamino, NumOfColumns, SumaMayor),
+	menorPotenciaDe2(SumaMayor, PotenciaMayor),
+	Potencia >= PotenciaMayor,
+	verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCamino,_),
+	NuevoMayorCamino = ListaCamino,!.
+
+chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],MayorCaminoHastaElMomento,NuevoMayorCamino):-
+	length(Cola,LargoCola),
+	LargoCola > 1,
+	chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,Cola,MayorCaminoHastaElMomento,NuevoMayorCaminoAuxiliar),
+	NuevoMayorCamino = NuevoMayorCaminoAuxiliar.
+
+chequearAdyacenciaCamino(_Grid,_NumOfColumns,_CantidadFilas,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
+
+verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCamino,Res):-
+	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
+	ListaCamino =[Cabeza|_Cola],
+	X is Cabeza div NumOfColumns,
+	Y is Cabeza mod NumOfColumns,
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino),
+	contarPares(ListaCoordenadasCamino,X,Y,Cantidad),
+	NuevaPosicionPotencia is Cabeza + (NumOfColumns * Cantidad),
+	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
+	menorPotenciaDe2(Suma, PotenciaResultante),
+	eliminarLista(Grid,ListaCoordenadasCamino,NumOfColumns,Potencia,Resultante),
+	ordenarPorX(ListaCoordenadasCamino,ListaCoordenadasCamino2),
+	gravedad(Resultante,ListaCoordenadasCamino2,NumOfColumns,CantidadIndices,Result),!,
+	reemplazarCeros(Result,Res2),
+	chequearAdyacencia(Res2,NumOfColumns,CantidadFilas,NuevaPosicionPotencia,Potencia,_),
+	Res = [].
+
+
+chequearAdyacencia(Grid,NumOfColumns,CantidadFilas,NuevaPosicionPotencia,Potencia,_):-
+	X is NuevaPosicionPotencia div NumOfColumns,
+	Y is NuevaPosicionPotencia mod NumOfColumns,
+	getIndicesAdyacentes(NumOfColumns,CantidadFilas,NuevaPosicionPotencia, X, Y, ListaIndices),!,
+	hayCoincidencias(Grid,Potencia,ListaIndices,_).
+
+contarPares(Lista, X, Y, Suma) :-
+	findall(_, (member([H, Q], Lista), H > X, Q =:= Y), Pares),
+	length(Pares, Suma).
+
+hayCoincidencias(_Grid,_Potencia,[],_):- fail.
+hayCoincidencias(Grid,Potencia,[Cabeza|_Cola],_):-
+	nth0(Cabeza,Grid,Valor),
+	Potencia =:= Valor.
+hayCoincidencias(Grid,Potencia,[_Cabeza|Cola],_):-
+	hayCoincidencias(Grid,Potencia,Cola,_).
+
+
+	
