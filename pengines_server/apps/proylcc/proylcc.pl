@@ -570,7 +570,7 @@ verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCa
 	eliminarLista(Grid,ListaCoordenadasCamino,NumOfColumns,Potencia,Resultante),
 	ordenarPorX(ListaCoordenadasCamino,ListaCoordenadasCamino2),
 	gravedad(Resultante,ListaCoordenadasCamino2,NumOfColumns,CantidadIndices,Result),!,
-	reemplazarCeros(Result,Res2),
+	reemplazarCerosAux(Result,Res2),
 	chequearAdyacencia(Res2,NumOfColumns,CantidadFilas,NuevaPosicionPotencia,Potencia,_),
 	Res = [].
 
@@ -592,5 +592,14 @@ hayCoincidencias(Grid,Potencia,[Cabeza|_Cola],_):-
 hayCoincidencias(Grid,Potencia,[_Cabeza|Cola],_):-
 	hayCoincidencias(Grid,Potencia,Cola,_).
 
+reemplazarCerosAux([], []).
+% caso recursivo. si la cabeza es un 0 se lo reemplaza por una potencia de 2 aleatoria.
+reemplazarCerosAux([0|Cola], [Potencia|Cola2]) :-
+	Potencia = 2,
+	reemplazarCerosAux(Cola, Cola2).
+% caso recursivo 2. si el contenido de la cabeza no es 0, se sigue descomponiendo sin reemplazar el contenido.
+reemplazarCerosAux([Cabeza|Cola], [Cabeza|Cola2]) :-
+	Cabeza \= 0,
+	reemplazarCerosAux(Cola, Cola2).
 
 	
