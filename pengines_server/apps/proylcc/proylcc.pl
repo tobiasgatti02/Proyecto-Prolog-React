@@ -380,8 +380,15 @@ compararValores(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],Valor,Lista, List
 	compararValores(Grid,NumOfColumns,CantidadFilas,Cola, Valor, Lista, ListaResultanteAux),
 	ListaResultante = ListaResultanteAux.
 
-%////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ %Etapa 2: 
 
+/*	se encarga de realizar el comportamiento esperado al presionar el boton movida Maxima.
+*	Recorre la grid en busqueda del camino que genere el mayor numero posible 
+*	con la configuracion actual de la Grid.
+*	crea una lista vacia que va a representar el mayor camino hasta ese momento(la lista vacia),
+* 	llama a movidaMaximaAuxiliar/6 con el indice en 0 y la lista vacia como mayor camino.
+*	Éste metodo devuelve el mayor camino de la grilla y movidaMaxima/3 lo devuelve como resultado.
+*/
 movidaMaxima(Grid,NumOfColumns,CaminoMaximo):-
 	length(Grid, Size),
 	CantidadFilas is Size/NumOfColumns,
@@ -391,6 +398,13 @@ movidaMaxima(Grid,NumOfColumns,CaminoMaximo):-
 	traducirIndicesACoordenadas(ResAux,[],NumOfColumns,ListaCoordenadasMayorCamino),
 	CaminoMaximo = ListaCoordenadasMayorCamino.
 
+
+/*	si el indice está dentro de la Grid, se calcula el valor de ese indice, se crea una lista 
+*	vacía en representación del camino actual(como está empezando es vacío) y se llama al método
+*	movidaMaximaRecorrido/8 con ese valor y la lista vacia para que genere el camino esperado.
+*	cuando se obtiene el mayor camino vinculado a ese índice(si es que es mayor al mayor almacenado hasta al momento),
+*	se incrementa el índice en uno y se llama recursivamente a si mismo con ese indice incrementado.
+*/	
 movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMomento,Resultado):-
 	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
 	Indice =< CantidadIndices,
@@ -407,6 +421,11 @@ movidaMaximaAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMo
 */
 movidaMaximaAuxiliar(_,_,_,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
 
+
+/*	Si el indice recibido como parámetro no es miembro de la lista que representa al camino actual que se esta generando, 
+*	se agrega el mismo a la lista de indices de dicho camino, se calcula su coordenada X e Y y se llama al predicado
+*	getIndicesAdyacentes/6 y luego a compararValoresMovidaMaxima/8 con esa lista de indices. se devuelve el resultado de este ultimo.
+*/
 movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,MayorCaminoHastaElMomento,Resultado):-
 	not(member(Indice,ListaCamino)),
 	NuevaListaCamino = [Indice| ListaCamino],
@@ -417,8 +436,9 @@ movidaMaximaRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,M
 	Resultado = ResAux.
 
 /*
-*	cuando la lista de indices está vacia, significa que la rama ya no puede continuar, por lo tanto se compara el camino 
-*	que se esta recorriendo con el almacenado como mayor hasta el momento.
+*	cuando la lista de indices adyacentes está vacia, significa que la rama ya no puede continuar, por lo tanto se compara el camino 
+*	que se esta recorriendo con el almacenado como mayor hasta el momento. si la potencia que genera el que se esta recorriendo
+*	es mayor o igual a la que genera el MayorHastaElMomento, entonces el que se esta recorriendo pasa a ser el mayor, y se lo devuelve.
 */
 compararValoresMovidaMaxima(Grid,NumOfColumns,_,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
 	length(ListaCamino,Largo),
@@ -436,6 +456,12 @@ compararValoresMovidaMaxima(Grid,NumOfColumns,_,[],_,ListaCamino,MayorCaminoHast
 compararValoresMovidaMaxima(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
 	Res = MayorCaminoHastaElMomento.
 
+/*	si la cabeza de la lista de indices adyacentes no es miembro aún del camino que se está armando, se calcula el valor 
+*	del mismo y se compara con el valor del indice anterior del camino. si coinciden se llama recursivamente a 
+*	movidaMaximaRecorrido/8 con la cabeza de la lista de adyacentes ahora como índice actual. cuando se sale de dicho metodo,  
+*	se llama recursivamente a compararValoresMovidaMaxima/8 con la cola de la lista de indices adyacentes, para no perder
+*	posibles caminos.
+*/
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
 	not(member(Cabeza,ListaCamino)),
 	nth0(Cabeza, Grid, NuevoValor),
@@ -444,6 +470,13 @@ compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Va
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
 	Resultado = ResAux2. 
 	
+
+/*	si el largo de la lista del camino actual es mayor a 1, se chequea que el indice Cabeza de la lista de indices adyacentes no sea 
+*	aun miembro de la lista del camino, si no lo es, se calcula el valor y se chequea si coincide con la potencia siguiente a la 
+*	almacenada como actual. Luego se llama recursivamente a movidaMaximaRecorrido/8 con la cabeza de la lista de adyacentes ahora como 
+*	índice actual. cuando se sale de dicho metodo, se llama recursivamente a compararValoresMovidaMaxima/8 con la cola de la lista 
+*	de indices adyacentes, para no perder posibles caminos.
+*/	
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
 	length(ListaCamino, Largo),
 	Largo > 1,
@@ -455,13 +488,23 @@ compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Va
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
 	Resultante = ResAux2.
 
+
+/*	Si se llega a entrar en este metodo, significa que el indice Cabeza de la lista de indices adyacentes no contiene
+*	ni el mismo valor, ni la potencia siguiente al valor del ultimo del camino hasta ael momento, por ende se descarta ese 
+*	indice, y se llama recursivamente con la cola de la lista de indices.
+*/
 compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], Valor, ListaCamino, Mayor, Resultado):-
 	compararValoresMovidaMaxima(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
 	Resultado = ResAux.
 
-%///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+/*	se encarga de realizar el comportamiento esperado al presionar el boton movida Maxima Adyacente Igual.
+*	Recorre la grid en busqueda del camino que genere el mayor numero posible con la configuracion actual de la Grid.
+*	crea una lista vacia que va a representar el mayor camino hasta ese momento(la lista vacia),
+* 	llama a movidaMaximaAdtayenteAuxiliar/6 con el indice en 0 y la lista vacia como mayor camino.
+*	Éste metodo devuelve el mayor camino de la grilla con una potencia igual adyacente(preexistente) 
+*	y movidaMaximaAdyacenteIgual/3 lo devuelve como resultado.
+*/
 movidaMaximaAdyacenteIgual(Grid,NumOfColumns,CaminoMaximo):-
 	length(Grid, Size),
 	CantidadFilas is Size/NumOfColumns,
@@ -471,6 +514,14 @@ movidaMaximaAdyacenteIgual(Grid,NumOfColumns,CaminoMaximo):-
 	traducirIndicesACoordenadas(ResAux,[],NumOfColumns,ListaCoordenadasMayorCamino),
 	CaminoMaximo = ListaCoordenadasMayorCamino.
 
+
+/*	si el indice está dentro de la Grid, se calcula el valor de ese indice, se crea una lista 
+*	vacía en representación del camino actual(como está empezando es vacío) y se llama al método
+*	movidaMaximaAdyacenteRecorrido/8 con ese valor y la lista vacia para que genere el camino esperado.
+*	cuando se obtiene el mayor camino vinculado a ese índice(si es que existe alguno que cumpla la propiedad,
+*	y a su vez es mayor al mayor almacenado hasta al momento), se incrementa el índice en uno y se llama 
+*	recursivamente a si mismo con ese indice.
+*/
 movidaMaximaAdyacenteAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCaminoHastaElMomento,Resultado):-
 	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
 	Indice =< CantidadIndices,
@@ -487,6 +538,11 @@ movidaMaximaAdyacenteAuxiliar(Grid,NumOfColumns,CantidadFilas,Indice,MayorCamino
 */
 movidaMaximaAdyacenteAuxiliar(_,_,_,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
 
+
+/*	Si el indice recibido como parámetro no es miembro de la lista que representa al camino actual que se esta generando, 
+*	se agrega el mismo a la lista de indices de dicho camino, se calcula su coordenada X e Y y se llama al predicado
+*	getIndicesAdyacentes/6 y luego a compararValoresMovidaMaxima/8 con esa lista de indices. se devuelve el resultado de este ultimo.
+*/
 movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor,Indice,MayorCaminoHastaElMomento,Resultado):-
 	not(member(Indice,ListaCamino)),
 	NuevaListaCamino = [Indice| ListaCamino],
@@ -496,6 +552,12 @@ movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor
 	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, ListaIndices, Valor, NuevaListaCamino, MayorCaminoHastaElMomento, ResAux),
 	Resultado = ResAux.
 
+/*
+*	cuando la lista de indices adyacentes está vacia, significa que la rama ya no puede continuar, por lo tanto se compara el camino 
+*	que se esta recorriendo con el almacenado como mayor hasta el momento. si la potencia que genera el que se esta recorriendo
+*	es mayor o igual a la que genera el MayorHastaElMomento, entonces pasamos al siguiente paso que consiste en llamar al metodo 
+* 	chequearAdyacenciaCamino/6, si no falla significa que hay adyacencia, por lo tanto, el que se esta recorriendo pasa a ser el mayor, y se lo devuelve.
+*/
 compararValoresMovidaMaximaAdyacente(Grid,NumOfColumns,CantidadFilas,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
 	length(ListaCamino,Largo),
 	Largo > 1,
@@ -509,13 +571,19 @@ compararValoresMovidaMaximaAdyacente(Grid,NumOfColumns,CantidadFilas,[],_,ListaC
 	chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCaminoHastaElMomento,NuevoMayorCamino),
 	Res = NuevoMayorCamino.
 
-/*	si el anterior falló, significa que el camino que se esta recorriendo no debe reemplazar al mayor hasta el momento.*/
+/*	si el anterior falló, o porque la potencia no es mayor a la del mayor camino hasta el momento, o porque no hay adyacencia, 
+*	significa que el camino que se esta recorriendo no debe reemplazar al mayor hasta el momento.
+*/
 compararValoresMovidaMaximaAdyacente(_,_,_,[],_,_,MayorCaminoHastaElMomento,Res):-
 	Res = MayorCaminoHastaElMomento.
 
+/*	si la cabeza de la lista de indices adyacentes no es miembro aún del camino que se está armando, se calcula el valor 
+*	del mismo y se compara con el valor del indice anterior del camino. si coinciden se llama recursivamente a 
+*	movidaMaximaAdyacenteRecorrido/8 con la cabeza de la lista de adyacentes ahora como índice actual. cuando se sale de dicho metodo,  
+*	se llama recursivamente a compararValoresMovidaMaximaAdyacente/8 con la cola de la lista de indices adyacentes, para no perder
+*	posibles caminos.
+*/
 compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultado):-
-	%length(ListaCamino, Largo),
-	%Largo > 1,
 	not(member(Cabeza,ListaCamino)),
 	nth0(Cabeza, Grid, NuevoValor),
 	Valor =:= NuevoValor,
@@ -523,6 +591,12 @@ compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|
 	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
 	Resultado = ResAux2. 
 	
+/*	si el largo de la lista del camino actual es mayor a 1, se chequea que el indice Cabeza de la lista de indices adyacentes no sea 
+*	aun miembro de la lista del camino, si no lo es, se calcula el valor y se chequea si coincide con la potencia siguiente a la 
+*	almacenada como actual. Luego se llama recursivamente a movidaMaximaAdyacenteRecorrido/8 con la cabeza de la lista de adyacentes ahora como 
+*	índice actual. cuando se sale de dicho metodo, se llama recursivamente a compararValoresMovidaMaximaAdyacente/8 con la cola de la lista 
+*	de indices adyacentes, para no perder posibles caminos.
+*/	
 compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|Cola], Valor, ListaCamino, MayorCaminoHastaElMomento, Resultante):-
 	length(ListaCamino, Largo),
 	Largo > 1,
@@ -533,13 +607,20 @@ compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [Cabeza|
 	movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,SiguientePotencia,Cabeza,MayorCaminoHastaElMomento,ResAux),
 	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas,Cola,Valor,ListaCamino,ResAux,ResAux2),
 	Resultante = ResAux2.
-	
+
+/*	Si se llega a entrar en este metodo, significa que el indice Cabeza de la lista de indices adyacentes no contiene
+*	ni el mismo valor, ni la potencia siguiente al valor del ultimo del camino hasta el momento, por ende se descarta ese 
+*	indice, y se llama recursivamente con la cola de la lista de indices.
+*/
 compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, [_Cabeza|Cola], Valor, ListaCamino, Mayor, Resultado):-
 	compararValoresMovidaMaximaAdyacente(Grid, NumOfColumns, CantidadFilas, Cola, Valor, ListaCamino, Mayor, ResAux),
 	Resultado = ResAux.
 
+/*	se calcula la potencia del camino, y se llama al predicado verificarIgualPotenciaAdyacente/6, si no falla, nuevoMayorCamino
+*	se iguala al camino que se esta recorriendo. 
+*/	
 chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCaminoHastaElMomento,NuevoMayorCamino):-
-	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino),
 	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
 	menorPotenciaDe2(Suma, Potencia),
 	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
@@ -549,6 +630,9 @@ chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCamino
 	verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCamino,_),
 	NuevoMayorCamino = ListaCamino,!.
 
+/*	si el anterior falló, descompone el camino que se recorrió, y prueba adyacencia cada vez que elimina un indice del camino
+*	para no perder ningun camino.
+*/	
 chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],MayorCaminoHastaElMomento,NuevoMayorCamino):-
 	length(Cola,LargoCola),
 	LargoCola > 1,
@@ -557,6 +641,11 @@ chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,[_Cabeza|Cola],MayorCam
 
 chequearAdyacenciaCamino(_Grid,_NumOfColumns,_CantidadFilas,_,MayorCaminoHastaElMomento,MayorCaminoHastaElMomento).
 
+
+/* 	Verifica que la potencia resultante sea igual a una potencia adyacente preexistente en la grid
+*	si la potencia generada no va a quedar como adyacente a una potencia igual(preexistente) luego de eliminar el camino
+*	que se va a marcar como maximo, el predicado falla.
+*/
 verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCamino,Res):-
 	CantidadIndices is (NumOfColumns * CantidadFilas) - 1,
 	ListaCamino =[Cabeza|_Cola],
@@ -565,26 +654,33 @@ verificarIgualPotenciaAdyacente(Grid,NumOfColumns,CantidadFilas,Potencia,ListaCa
 	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino),
 	contarPares(ListaCoordenadasCamino,X,Y,Cantidad),
 	NuevaPosicionPotencia is Cabeza + (NumOfColumns * Cantidad),
-	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
-	menorPotenciaDe2(Suma, PotenciaResultante),
 	eliminarLista(Grid,ListaCoordenadasCamino,NumOfColumns,Potencia,Resultante),
 	ordenarPorX(ListaCoordenadasCamino,ListaCoordenadasCamino2),
 	gravedad(Resultante,ListaCoordenadasCamino2,NumOfColumns,CantidadIndices,Result),!,
-	reemplazarCerosAux(Result,Res2),
+	reemplazarCerosPorDos(Result,Res2),
 	chequearAdyacencia(Res2,NumOfColumns,CantidadFilas,NuevaPosicionPotencia,Potencia,_),
 	Res = [].
 
-
+/*	obtiene los indices adyacentes a la posicion en la que quedaria la potencia generada, y chequea si 
+*	hay alguna coincidencia con sus indices adyacentes.
+*/
 chequearAdyacencia(Grid,NumOfColumns,CantidadFilas,NuevaPosicionPotencia,Potencia,_):-
 	X is NuevaPosicionPotencia div NumOfColumns,
 	Y is NuevaPosicionPotencia mod NumOfColumns,
 	getIndicesAdyacentes(NumOfColumns,CantidadFilas,NuevaPosicionPotencia, X, Y, ListaIndices),!,
 	hayCoincidencias(Grid,Potencia,ListaIndices,_).
 
+
+/* 	lleva una cuenta de los pares que en la grid estan por debajo del ultimo elemento en el camino
+*	es decir que su componente X (H), es mayor a la compente X del par que representa al ultimo elemento del camino
+*	y su componente Y (Q) es igual a la componente Y del par que representa al ultimo elemento del camino.
+*/
 contarPares(Lista, X, Y, Suma) :-
 	findall(_, (member([H, Q], Lista), H > X, Q =:= Y), Pares),
 	length(Pares, Suma).
 
+
+% busca coincidencias entre un valor, y los valores almacenados en los indices adyacentes de la grilla.
 hayCoincidencias(_Grid,_Potencia,[],_):- fail.
 hayCoincidencias(Grid,Potencia,[Cabeza|_Cola],_):-
 	nth0(Cabeza,Grid,Valor),
@@ -592,14 +688,20 @@ hayCoincidencias(Grid,Potencia,[Cabeza|_Cola],_):-
 hayCoincidencias(Grid,Potencia,[_Cabeza|Cola],_):-
 	hayCoincidencias(Grid,Potencia,Cola,_).
 
-reemplazarCerosAux([], []).
-% caso recursivo. si la cabeza es un 0 se lo reemplaza por una potencia de 2 aleatoria.
-reemplazarCerosAux([0|Cola], [Potencia|Cola2]) :-
+
+/*  
+    Reemplaza los ceros que genero Gravedad por 2, con el fin de que la grilla alternativa generada
+    por la Gravedad no afecte al funcionamiento generando numeros aleatorios por los que la grilla 
+	actual pueda conectar
+*/ 
+reemplazarCerosPorDos([], []).
+% caso recursivo. si la cabeza es un 0 se lo reemplaza por un 2.
+reemplazarCerosPorDos([0|Cola], [Potencia|Cola2]) :-
 	Potencia = 2,
-	reemplazarCerosAux(Cola, Cola2).
+	reemplazarCerosPorDos(Cola, Cola2).
 % caso recursivo 2. si el contenido de la cabeza no es 0, se sigue descomponiendo sin reemplazar el contenido.
-reemplazarCerosAux([Cabeza|Cola], [Cabeza|Cola2]) :-
+reemplazarCerosPorDos([Cabeza|Cola], [Cabeza|Cola2]) :-
 	Cabeza \= 0,
-	reemplazarCerosAux(Cola, Cola2).
+	reemplazarCerosPorDos(Cola, Cola2).
 
 	
