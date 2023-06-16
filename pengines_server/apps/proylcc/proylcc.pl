@@ -561,10 +561,10 @@ movidaMaximaAdyacenteRecorrido(Grid,NumOfColumns,CantidadFilas,ListaCamino,Valor
 compararValoresMovidaMaximaAdyacente(Grid,NumOfColumns,CantidadFilas,[],_,ListaCamino,MayorCaminoHastaElMomento,Res):-
 	length(ListaCamino,Largo),
 	Largo > 1,
-	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino), 
 	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
 	menorPotenciaDe2(Suma, Potencia),
-	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), 
 	sumarPath(Grid, ListaCoordenadasMayorCamino, NumOfColumns, SumaMayor),
 	menorPotenciaDe2(SumaMayor, PotenciaMayor),
 	Potencia >= PotenciaMayor,
@@ -623,7 +623,7 @@ chequearAdyacenciaCamino(Grid,NumOfColumns,CantidadFilas,ListaCamino,MayorCamino
 	traducirIndicesACoordenadas(ListaCamino,[],NumOfColumns,ListaCoordenadasCamino),
 	sumarPath(Grid, ListaCoordenadasCamino, NumOfColumns, Suma),
 	menorPotenciaDe2(Suma, Potencia),
-	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), % la listaCoordenadasGrupo la vamos a tratar como un path a partir de aqui
+	traducirIndicesACoordenadas(MayorCaminoHastaElMomento,[],NumOfColumns,ListaCoordenadasMayorCamino), 
 	sumarPath(Grid, ListaCoordenadasMayorCamino, NumOfColumns, SumaMayor),
 	menorPotenciaDe2(SumaMayor, PotenciaMayor),
 	Potencia >= PotenciaMayor,
